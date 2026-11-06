@@ -16,10 +16,11 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _reject_unsafe_production(self) -> "Settings":
+        secret_key = self.secret_key.get_secret_value()
         if self.environment == "production":
             if self.debug:
                 raise ValueError("DEBUG must be false in production")
-            if self.secret_key.get_secret_value() in {"", " ", "change_me", "abc"}:
+            if len(secret_key.strip()) < 32:
                 raise ValueError("SECRET_KEY must be set to a strong secret in production")
         return self
 
